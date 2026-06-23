@@ -51,4 +51,41 @@ public class EventBusTests
 
         Assert.False(called);
     }
+
+    [Fact]
+    public void Disposed_token_removes_subscription()
+    {
+        var bus = new EventBus();
+        var calls = 0;
+
+        var token = bus.Subscribe<UserCreated>(_ => calls++);
+        token.Dispose();
+        bus.Publish(new UserCreated("Alice"));
+
+        Assert.Equal(0, calls);
+    }
+
+    [Fact]
+    public void Condition_true_handler_is_called()
+    {
+        var bus = new EventBus();
+        var called = false;
+
+        bus.Subscribe<UserCreated>(_ => called = true, condition: e => e.Name == "Alice");
+        bus.Publish(new UserCreated("Alice"));
+
+        Assert.True(called);
+    }
+
+    [Fact]
+    public void Condition_false_handler_is_not_called()
+    {
+        var bus = new EventBus();
+        var called = false;
+
+        bus.Subscribe<UserCreated>(_ => called = true, condition: e => e.Name == "Alice");
+        bus.Publish(new UserCreated("Bob"));
+
+        Assert.False(called);
+    }
 }

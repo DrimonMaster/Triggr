@@ -2,6 +2,6 @@ namespace TriggerProject;
 
 public interface IEventBus
 {
-    void Subscribe<TEvent>(Action<TEvent> handler);
+    IDisposable Subscribe<TEvent>(Action<TEvent> handler, Func<TEvent, bool>? condition = null);
     void Publish<TEvent>(TEvent e);
 }
