@@ -88,4 +88,41 @@ public class EventBusTests
 
         Assert.False(called);
     }
+
+    [Fact]
+    public void Double_dispose_does_not_throw()
+    {
+        var bus = new EventBus();
+        var token = bus.Subscribe<UserCreated>(_ => { });
+
+        token.Dispose();
+        token.Dispose();
+    }
+
+    [Fact]
+    public void SubscribeOnce_handler_called_only_on_first_publish()
+    {
+        var bus = new EventBus();
+        var calls = 0;
+
+        bus.SubscribeOnce<UserCreated>(_ => calls++);
+        bus.Publish(new UserCreated("Alice"));
+        bus.Publish(new UserCreated("Alice"));
+
+        Assert.Equal(1, calls);
+    }
+
+    [Fact]
+    public void SubscribeOnce_with_condition_fires_once_when_matched()
+    {
+        var bus = new EventBus();
+        var calls = 0;
+
+        bus.SubscribeOnce<UserCreated>(_ => calls++, condition: e => e.Name == "Alice");
+        bus.Publish(new UserCreated("Bob"));   // не відповідає умові
+        bus.Publish(new UserCreated("Alice")); // спрацьовує і знімає підписку
+        bus.Publish(new UserCreated("Alice")); // вже знято
+
+        Assert.Equal(1, calls);
+    }
 }
