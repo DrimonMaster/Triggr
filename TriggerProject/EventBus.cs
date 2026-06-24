@@ -3,7 +3,10 @@ namespace TriggerProject;
 public sealed class EventBus : IEventBus
 {
     private readonly Dictionary<Type, List<Entry>> _handlers = new();
+    private readonly List<IEventMiddleware> _middleware = new();
     private int _order;
+
+    public void Use(IEventMiddleware middleware) => _middleware.Add(middleware);
 
     public IDisposable Subscribe<TEvent>(Action<TEvent> handler, Func<TEvent, bool>? condition = null, int priority = 0)
     {
@@ -37,19 +40,31 @@ public sealed class EventBus : IEventBus
 
     public void Publish<TEvent>(TEvent e)
     {
-        var type = typeof(TEvent);
-        if (!_handlers.TryGetValue(type, out var list))
-            return;
+        _handlers.TryGetValue(typeof(TEvent), out var list);
 
-        var snapshot = list.ToArray();
-        Array.Sort(snapshot, (a, b) =>
+        var snapshot = list != null ? list.ToArray() : Array.Empty<Entry>();
+        if (snapshot.Length > 1)
+            Array.Sort(snapshot, (a, b) =>
+            {
+                int cmp = b.Priority.CompareTo(a.Priority);
+                return cmp != 0 ? cmp : a.Order.CompareTo(b.Order);
+            });
+
+        Action<object> invokeHandlers = ev =>
         {
-            int cmp = b.Priority.CompareTo(a.Priority);
-            return cmp != 0 ? cmp : a.Order.CompareTo(b.Order);
-        });
+            foreach (var entry in snapshot)
+                ((Action<TEvent>)entry.Handler)((TEvent)ev);
+        };
 
-        foreach (var entry in snapshot)
-            ((Action<TEvent>)entry.Handler)(e);
+        Action<object> pipeline = invokeHandlers;
+        for (int i = _middleware.Count - 1; i >= 0; i--)
+        {
+            var mw = _middleware[i];
+            var next = pipeline;
+            pipeline = ev => mw.Handle(ev, next);
+        }
+        
+        pipeline(e!);
     }
 
     private sealed record Entry(Delegate Handler, int Priority, int Order);

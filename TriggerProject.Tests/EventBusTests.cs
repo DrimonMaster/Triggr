@@ -153,4 +153,48 @@ public class EventBusTests
 
         Assert.Equal(new[] { 1, 2, 3 }, order);
     }
+
+    [Fact]
+    public void Middleware_is_called_on_publish()
+    {
+        var bus = new EventBus();
+        var called = false;
+
+        bus.Use(new LambdaMiddleware((e, next) => { called = true; next(e); }));
+        bus.Subscribe<UserCreated>(_ => { });
+        bus.Publish(new UserCreated("Alice"));
+
+        Assert.True(called);
+    }
+
+    [Fact]
+    public void Middleware_executes_in_registration_order()
+    {
+        var bus = new EventBus();
+        var order = new List<int>();
+
+        bus.Use(new LambdaMiddleware((e, next) => { order.Add(1); next(e); }));
+        bus.Use(new LambdaMiddleware((e, next) => { order.Add(2); next(e); }));
+        bus.Publish(new UserCreated("Alice"));
+
+        Assert.Equal(new[] { 1, 2 }, order);
+    }
+
+    [Fact]
+    public void Middleware_can_block_event_by_not_calling_next()
+    {
+        var bus = new EventBus();
+        var handlerCalled = false;
+
+        bus.Use(new LambdaMiddleware((_, _) => { }));
+        bus.Subscribe<UserCreated>(_ => handlerCalled = true);
+        bus.Publish(new UserCreated("Alice"));
+
+        Assert.False(handlerCalled);
+    }
+
+    private sealed class LambdaMiddleware(Action<object, Action<object>> handle) : IEventMiddleware
+    {
+        public void Handle(object e, Action<object> next) => handle(e, next);
+    }
 }
