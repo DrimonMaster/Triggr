@@ -125,4 +125,32 @@ public class EventBusTests
 
         Assert.Equal(1, calls);
     }
+
+    [Fact]
+    public void Higher_priority_handler_is_called_first()
+    {
+        var bus = new EventBus();
+        var order = new List<int>();
+
+        bus.Subscribe<UserCreated>(_ => order.Add(1), priority: 1);
+        bus.Subscribe<UserCreated>(_ => order.Add(10), priority: 10);
+        bus.Subscribe<UserCreated>(_ => order.Add(5), priority: 5);
+        bus.Publish(new UserCreated("Alice"));
+
+        Assert.Equal(new[] { 10, 5, 1 }, order);
+    }
+
+    [Fact]
+    public void Equal_priority_preserves_subscription_order()
+    {
+        var bus = new EventBus();
+        var order = new List<int>();
+
+        bus.Subscribe<UserCreated>(_ => order.Add(1));
+        bus.Subscribe<UserCreated>(_ => order.Add(2));
+        bus.Subscribe<UserCreated>(_ => order.Add(3));
+        bus.Publish(new UserCreated("Alice"));
+
+        Assert.Equal(new[] { 1, 2, 3 }, order);
+    }
 }

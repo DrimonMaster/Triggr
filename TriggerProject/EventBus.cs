@@ -2,9 +2,10 @@ namespace TriggerProject;
 
 public sealed class EventBus : IEventBus
 {
-    private readonly Dictionary<Type, List<Delegate>> _handlers = new();
+    private readonly Dictionary<Type, List<Entry>> _handlers = new();
+    private int _order;
 
-    public IDisposable Subscribe<TEvent>(Action<TEvent> handler, Func<TEvent, bool>? condition = null)
+    public IDisposable Subscribe<TEvent>(Action<TEvent> handler, Func<TEvent, bool>? condition = null, int priority = 0)
     {
         Action<TEvent> wrapped = condition == null
             ? handler
@@ -13,22 +14,24 @@ public sealed class EventBus : IEventBus
         var type = typeof(TEvent);
         if (!_handlers.TryGetValue(type, out var list))
         {
-            list = new List<Delegate>();
+            list = new List<Entry>();
             _handlers[type] = list;
         }
-        list.Add(wrapped);
 
-        return new Token(() => list.Remove(wrapped));
+        var entry = new Entry(wrapped, priority, _order++);
+        list.Add(entry);
+
+        return new Token(() => list.Remove(entry));
     }
 
-    public IDisposable SubscribeOnce<TEvent>(Action<TEvent> handler, Func<TEvent, bool>? condition = null)
+    public IDisposable SubscribeOnce<TEvent>(Action<TEvent> handler, Func<TEvent, bool>? condition = null, int priority = 0)
     {
         IDisposable? token = null;
         token = Subscribe<TEvent>(e =>
         {
             token!.Dispose();
             handler(e);
-        }, condition);
+        }, condition, priority);
         return token;
     }
 
@@ -38,9 +41,18 @@ public sealed class EventBus : IEventBus
         if (!_handlers.TryGetValue(type, out var list))
             return;
 
-        foreach (var handler in list.ToArray())
-            ((Action<TEvent>)handler)(e);
+        var snapshot = list.ToArray();
+        Array.Sort(snapshot, (a, b) =>
+        {
+            int cmp = b.Priority.CompareTo(a.Priority);
+            return cmp != 0 ? cmp : a.Order.CompareTo(b.Order);
+        });
+
+        foreach (var entry in snapshot)
+            ((Action<TEvent>)entry.Handler)(e);
     }
+
+    private sealed record Entry(Delegate Handler, int Priority, int Order);
 
     private sealed class Token : IDisposable
     {
