@@ -8,6 +8,11 @@ on:
 jobs:
   publish:
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+
+    environment: nuget.org
 
     steps:
       - uses: actions/checkout@v4
@@ -24,4 +29,4 @@ jobs:
         run: dotnet pack Triggr/Triggr.csproj --configuration Release --no-build --output ./nupkg
 
       - name: Push to NuGet
-        run: dotnet nuget push ./nupkg/*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
+        run: dotnet nuget push ./nupkg/*.nupkg --source https://api.nuget.org/v3/index.json
