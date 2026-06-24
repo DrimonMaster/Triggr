@@ -1,8 +1,8 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TriggerProject", "TriggerProject\TriggerProject.csproj", "{BBCEFE9F-2F28-4CBB-AD68-FB3B31E90771}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Triggr", "Triggr\Triggr.csproj", "{BBCEFE9F-2F28-4CBB-AD68-FB3B31E90771}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TriggerProject.Tests", "TriggerProject.Tests\TriggerProject.Tests.csproj", "{F7850D17-61C2-4589-93B6-0FEB01F4668F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Triggr.Tests", "Triggr.Tests\Triggr.Tests.csproj", "{F7850D17-61C2-4589-93B6-0FEB01F4668F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

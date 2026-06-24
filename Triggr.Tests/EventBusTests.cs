@@ -1,7 +1,7 @@
 using Xunit;
-using TriggerProject;
+using Triggr;
 
-namespace TriggerProject.Tests;
+namespace Triggr.Tests;
 
 public class EventBusTests
 {

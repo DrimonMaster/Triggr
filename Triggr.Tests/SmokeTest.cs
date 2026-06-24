@@ -1,6 +1,6 @@
 using Xunit;
 
-namespace TriggerProject.Tests;
+namespace Triggr.Tests;
 
 public class SmokeTest
 {

@@ -1,4 +1,4 @@
-namespace TriggerProject;
+namespace Triggr;
 
 public sealed class EventBus : IEventBus
 {

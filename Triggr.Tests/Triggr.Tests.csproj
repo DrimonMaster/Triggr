@@ -18,7 +18,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\TriggerProject\TriggerProject.csproj" />
+        <ProjectReference Include="..\Triggr\Triggr.csproj" />
     </ItemGroup>
 
 </Project>
