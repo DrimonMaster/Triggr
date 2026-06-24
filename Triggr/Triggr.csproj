@@ -7,4 +7,13 @@
         <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     </PropertyGroup>
 
+    <PropertyGroup>
+        <PackageId>Triggr</PackageId>
+        <Version>0.1.0</Version>
+        <Authors>DrimonMaster</Authors>
+        <Description>Typed event bus for .NET. Zero dependencies.</Description>
+        <RepositoryUrl>https://github.com/DrimonMaster/Triggr</RepositoryUrl>
+        <PackageTags>event-bus;events;messaging;game-dev</PackageTags>
+    </PropertyGroup>
+
 </Project>
